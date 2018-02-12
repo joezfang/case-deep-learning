@@ -1,0 +1,24 @@
+---
+title: "Actuarial applications of deep learning"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Presentation outline
+
+- Introduction to deep learning
+    - Layers, backpropagation, and stuff
+- Software landscape
+    - TensorFlow, Keras, etc.
+- Intro to Keras API
+    - MNIST example
+    - Convnet?
+- Loss reserving case study
+- Talk about time series forecasting and natural language processing
+    - Motivate discussion of RNNs
+- Open discussion on applications
+
+
