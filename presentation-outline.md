@@ -3,14 +3,14 @@ Actuarial applications of deep learning
 
 Presentation outline
 
--   Introduction to deep learning
+-   Opening remarks [Kevin, 5 min]
+-   Introduction to deep learning [Joe, 15 min]
     -   Layers, backpropagation, and stuff
--   Software landscape
+-   Software landscape [Kevin, 5 min]
     -   TensorFlow, Keras, etc.
--   Intro to Keras API
+-   Intro to Keras API (hands-on demo) [Joe, 15 min]
     -   MNIST example
     -   Convnet?
--   Loss reserving case study
--   Talk about time series forecasting and natural language processing
-    -   Motivate discussion of RNNs
--   Open discussion on applications
+-   Loss reserving case study [Kevin, 20 min]
+-   Q&A [5 min]
+-   Open discussion on applications [10 min]
