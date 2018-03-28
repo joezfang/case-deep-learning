@@ -1,0 +1,1 @@
+rmarkdown::render("actuarial-applications-deep-learning.Rmd", output_file = "static/index.html")
