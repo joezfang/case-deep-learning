@@ -73,22 +73,23 @@ head(IndustryAuto, 12)
 library(tidyverse)
 # look at data as of calendar year 2002
 data &lt;- IndustryAuto %&gt;%
-  filter(Incurral.Year + Development.Year - 1 &lt;= 2002)
+  rename(ay = Incurral.Year, dev = Development.Year, paid = Claim) %&gt;%
+  filter(ay + dev - 1 &lt;= 2002)
 # convert to triangle format
 data %&gt;%
-  spread(Development.Year, Claim)
+  spread(dev, paid)
 ```
 
 ```
-##   Incurral.Year     1     2     3     4     5     6     7     8
-## 1          1995 17674 32062 38619 42035 43829 44723 45162 45375
-## 2          1996 18315 32791 39271 42933 44950 45917 46392    NA
-## 3          1997 18606 32942 39634 43411 45428 46357    NA    NA
-## 4          1998 18816 33667 40575 44446 46476    NA    NA    NA
-## 5          1999 20649 36515 43724 47684    NA    NA    NA    NA
-## 6          2000 22327 39312 46848    NA    NA    NA    NA    NA
-## 7          2001 23141 40527    NA    NA    NA    NA    NA    NA
-## 8          2002 24301    NA    NA    NA    NA    NA    NA    NA
+##     ay     1     2     3     4     5     6     7     8
+## 1 1995 17674 32062 38619 42035 43829 44723 45162 45375
+## 2 1996 18315 32791 39271 42933 44950 45917 46392    NA
+## 3 1997 18606 32942 39634 43411 45428 46357    NA    NA
+## 4 1998 18816 33667 40575 44446 46476    NA    NA    NA
+## 5 1999 20649 36515 43724 47684    NA    NA    NA    NA
+## 6 2000 22327 39312 46848    NA    NA    NA    NA    NA
+## 7 2001 23141 40527    NA    NA    NA    NA    NA    NA
+## 8 2002 24301    NA    NA    NA    NA    NA    NA    NA
 ```
 
 ---
@@ -101,26 +102,81 @@ We just need to come up with some predictors
 
 
 ```
-##   Incurral.Year Development.Year Claim predictors
-## 1          1995                1 17674       ?!?!
-## 2          1996                1 18315       ?!?!
-## 3          1997                1 18606       ?!?!
-## 4          1998                1 18816       ?!?!
-## 5          1999                1 20649       ?!?!
+##     ay dev  paid predictors
+## 1 1995   1 17674       ?!?!
+## 2 1996   1 18315       ?!?!
+## 3 1997   1 18606       ?!?!
+## 4 1998   1 18816       ?!?!
+## 5 1999   1 20649       ?!?!
 ```
 
 Then we can do something like
 
 
 ```r
-crazy_AI_algorithm(Claim ~ predictors, data = data)
+crazy_AI_algorithm(paid ~ predictors, data = data)
 ```
 
 ---
 
-# Rules for predictors
+# Introducing DeepTriangle
 
-Really, just one rule, and that is
+From the abstract...
+
+&gt; We propose a novel approach for loss reserving based on deep neural networks.
+The approach allows for jointly modeling of paid losses and claims outstanding,
+and incorporation of heterogenous inputs. We demonstrate the performance of
+the models by validating them on publicly available Schedule P data across lines
+of business and show that they achieve the performance of existing techniques
+while requiring minimal feature engineering and actuarial input.
+
+---
+
+# DeepTriangle
+
+Sounds fancy on paper, but it's really just a neural network.
+
+---
+
+# Data
+
+Schedule P data from [http://www.casact.org/research/index.cfm?fa=loss_reserves_data](http://www.casact.org/research/index.cfm?fa=loss_reserves_data).
+
+10 accident years (1988-1997) of paid and incurred losses, with 10 development lags, from a bunch of companies and lines of business.
+
+---
+
+# Response and predictors
+
+- Response: incremental paid losses and total claims outstanding
+- Predictors:
+  - Time series of paid losses and case reserves along accident year
+  - Time series of paid losses and case reserves along development year
+  - Company (because we're using data from all companies simultaneously)
+
+---
+
+# Response
+
+- **Response: incremental paid losses and total claims outstanding**
+
+We're gonna predict both paid loss and claims o/s in the same model, ain't that cool?!
+
+---
+
+# Predictors
+
+- Response: incremental paid losses and total claims outstanding 👍
+- **Predictors:**
+  - **Time series of paid losses and case reserves along accident year**
+  - **Time series of paid losses and case reserves along development year**
+  - Company (because we're using data from all companies simultaneously)
+
+---
+
+# Predictors
+
+There's really not much we can use in aggregated data. We also have to follow this rule:
 
 &gt; The information used to derive the predictors for a cell must be available before the calendar period associated with the cell.
 
@@ -128,7 +184,133 @@ I.e. we're not cheating and looking into the future.
 
 ---
 
-#
+# Predictors
+
+Let's see what we mean by "time series of paid losses".
+
+---
+
+# Predictors
+
+Get some incremental numbers
+
+
+```r
+incremental_data &lt;- data %&gt;%
+  group_by(ay) %&gt;%
+  mutate(incremental_paid = paid - lag(paid, default = 0))
+incremental_data %&gt;%
+  select(-paid) %&gt;%
+  spread(dev, incremental_paid)
+```
+
+```
+## # A tibble: 8 x 9
+## # Groups:   ay [8]
+##      ay   `1`   `2`   `3`   `4`   `5`   `6`   `7`   `8`
+##   &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;
+## 1  1995 17674 14388  6557  3416  1794   894   439   213
+## 2  1996 18315 14476  6480  3662  2017   967   475    NA
+## 3  1997 18606 14336  6692  3777  2017   929    NA    NA
+## 4  1998 18816 14851  6908  3871  2030    NA    NA    NA
+## 5  1999 20649 15866  7209  3960    NA    NA    NA    NA
+## 6  2000 22327 16985  7536    NA    NA    NA    NA    NA
+## 7  2001 23141 17386    NA    NA    NA    NA    NA    NA
+## 8  2002 24301    NA    NA    NA    NA    NA    NA    NA
+```
+
+---
+
+# Predictors
+
+Let's say, for example, we want to compute "time series of paid losses along AY" predictor, we'd do something like
+
+
+```r
+sample_data_with_paid_history &lt;- incremental_data %&gt;%
+  mutate(
+    paid_history = map_chr(seq_along(incremental_paid),
+                       ~ incremental_paid[0:(.x - 1)] %&gt;%
+                         paste0(collapse = ", ")
+                       )
+  ) %&gt;%
+  ungroup() %&gt;%
+  filter(ay == 1995) %&gt;%
+  select(dev, incremental_paid, paid_history)
+```
+
+---
+
+# Predictors
+
+That looks like
+
+
+```r
+sample_data_with_paid_history
+```
+
+```
+## # A tibble: 8 x 3
+##     dev incremental_paid paid_history                            
+##   &lt;int&gt;            &lt;int&gt; &lt;chr&gt;                                   
+## 1     1            17674 ""                                      
+## 2     2            14388 17674                                   
+## 3     3             6557 17674, 14388                            
+## 4     4             3416 17674, 14388, 6557                      
+## 5     5             1794 17674, 14388, 6557, 3416                
+## 6     6              894 17674, 14388, 6557, 3416, 1794          
+## 7     7              439 17674, 14388, 6557, 3416, 1794, 894     
+## 8     8              213 17674, 14388, 6557, 3416, 1794, 894, 439
+```
+
+---
+
+# Predictors
+
+In DeepTriangle, we do this for both paid loss &amp; case reserve numbers, along both `ay` and `dev`.
+
+---
+
+# Predictors
+
+- **Predictors:**
+  - Time series of paid losses and case reserves along accident year 👍
+  - Time series of paid losses and case reserves along development year 👍
+  - **Company (because we're using data from all companies simultaneously)**
+
+---
+
+# Predictors
+
+Company code is one-hot encoded, e.g. the third company in a collection of `\(20\)` companies would be represented as
+
+
+```r
+keras::to_categorical(3, num_classes = 20)
+```
+
+```
+##  [1] 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+```
+
+---
+
+# Predictors
+
+- Response: incremental paid losses and total claims outstanding 👍
+- Predictors:
+  - Time series of paid losses and case reserves along accident year 👍
+  - Time series of paid losses and case reserves along development year 👍
+  - Company (because we're using data from all companies simultaneously) 👍
+  
+Now that we've gone through the response and predictors, let's talk about the neural network itself!
+
+---
+
+# Architecture
+
+&lt;img src="figs/nn1.png" width="50%" style="display: block; margin: auto;" /&gt;
     </textarea>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
