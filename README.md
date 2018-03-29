@@ -4,4 +4,4 @@ This is the repository for the presentation *Actuarial applications of deep lear
 
 ## Contribution instructions
 
-Fork the repo. Make changes to `presentation.Rmd`. Run `build.R` (**don't hit the knit button**) to build the slides in `static/`. Send a PR against master.
+Fork the repo. Make changes to `presentation.Rmd`. Run `build.R` to build the slides in `static/` (note that hitting the `Knit` button will build the `.html` in the root directory). Send a PR against master. You can see a deployment preview by going to `Show all checks -> Details` on the PR page once it's been built.
