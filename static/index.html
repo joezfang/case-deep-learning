@@ -22,82 +22,113 @@ class: center, middle, inverse, title-slide
 
 
 
-# Welcome/Introduction
+# Hi
+
+Hello!
 
 ---
-# Agenda
+class: inverse, center, middle
 
-- Introduction to Deep Learning
-
-- Hands-on Keras Demo
-
-- Loss Reserving Case Study
-
-- Q+A and Open Discussion
+# Loss reserving case study
 
 ---
-# What is Machine Learning?
 
-- A field of computer science that gives computers the ability to "learn" with data, without being explicitly programmed
+# "Claims liabilities Estimation"
 
-![](img/machine-learning-features.png)
-
----
-# Why Deep Learning?
-
-- Subset of machine learning
-
-- Often uses a neural network to simulate how the human brain learns
-
-- Performs better than traditional machine learning techniques for large datasets
-
-&lt;img src="img/deep-learning.png" width="60%" style="display: block; margin: auto;" /&gt;
+Basically, figure out what we gotta pay in the future due to claims.
 
 ---
-# What is a Neural Network?
 
-![](img/neural-network.png)
+# Example triangle
 
----
-# How does a neural network learn?
 
-- Loss Functions
+```r
+library(insuranceData)
+data(IndustryAuto)
+head(IndustryAuto, 12)
+```
 
-- Gradient Descent
-
-![](img/gradient-descent.png)
-
----
-# What software is available for deep learning?
-
-- Front-end/programming language
-
-    - R, Python
-
-- Interface between front and back end
-
-    - Keras
-
-- Back-end for calculations
-
-    - TensorFlow, Theano
+```
+##    Incurral.Year Development.Year Claim
+## 1           1995                1 17674
+## 2           1996                1 18315
+## 3           1997                1 18606
+## 4           1998                1 18816
+## 5           1999                1 20649
+## 6           2000                1 22327
+## 7           2001                1 23141
+## 8           2002                1 24301
+## 9           2003                1 24210
+## 10          2004                1 24468
+## 11          1995                2 32062
+## 12          1996                2 32791
+```
 
 ---
-# Intro to Keras
 
-- Keras is a high-level neural networks API developed with a focus on enabling fast experimentation
+# Actually a triangle
 
-- https://keras.rstudio.com/
+
+```r
+library(tidyverse)
+# look at data as of calendar year 2002
+data &lt;- IndustryAuto %&gt;%
+  filter(Incurral.Year + Development.Year - 1 &lt;= 2002)
+# convert to triangle format
+data %&gt;%
+  spread(Development.Year, Claim)
+```
+
+```
+##   Incurral.Year     1     2     3     4     5     6     7     8
+## 1          1995 17674 32062 38619 42035 43829 44723 45162 45375
+## 2          1996 18315 32791 39271 42933 44950 45917 46392    NA
+## 3          1997 18606 32942 39634 43411 45428 46357    NA    NA
+## 4          1998 18816 33667 40575 44446 46476    NA    NA    NA
+## 5          1999 20649 36515 43724 47684    NA    NA    NA    NA
+## 6          2000 22327 39312 46848    NA    NA    NA    NA    NA
+## 7          2001 23141 40527    NA    NA    NA    NA    NA    NA
+## 8          2002 24301    NA    NA    NA    NA    NA    NA    NA
+```
 
 ---
-# MNIST Example
 
-Let's switch to R!
+# Treat this as a predictive modeling problem
+
+Each cell of the triangle is a row in the modeling dataset.
+
+We just need to come up with some predictors
+
+
+```
+##   Incurral.Year Development.Year Claim predictors
+## 1          1995                1 17674       ?!?!
+## 2          1996                1 18315       ?!?!
+## 3          1997                1 18606       ?!?!
+## 4          1998                1 18816       ?!?!
+## 5          1999                1 20649       ?!?!
+```
+
+Then we can do something like
+
+
+```r
+crazy_AI_algorithm(Claim ~ predictors, data = data)
+```
 
 ---
-# Q&amp;A and Discussion
+
+# Rules for predictors
+
+Really, just one rule, and that is
+
+&gt; The information used to derive the predictors for a cell must be available before the calendar period associated with the cell.
+
+I.e. we're not cheating and looking into the future.
 
 ---
+
+#
     </textarea>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({

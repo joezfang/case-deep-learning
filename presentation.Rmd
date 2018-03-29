@@ -95,3 +95,72 @@ Let's switch to R!
 # Q&A and Discussion
 
 ---
+=======
+Hello!
+
+---
+class: inverse, center, middle
+
+# Loss reserving case study
+
+---
+
+# "Claims liabilities Estimation"
+
+Basically, figure out what we gotta pay in the future due to claims.
+
+---
+
+# Example triangle
+
+```{r}
+library(insuranceData)
+data(IndustryAuto)
+head(IndustryAuto, 12)
+```
+
+---
+
+# Actually a triangle
+
+```{r, message = FALSE}
+library(tidyverse)
+# look at data as of calendar year 2002
+data <- IndustryAuto %>%
+  filter(Incurral.Year + Development.Year - 1 <= 2002)
+# convert to triangle format
+data %>%
+  spread(Development.Year, Claim)
+```
+
+---
+
+# Treat this as a predictive modeling problem
+
+Each cell of the triangle is a row in the modeling dataset.
+
+We just need to come up with some predictors
+
+```{r, echo = FALSE}
+data %>%
+  mutate(predictors = "?!?!") %>%
+  head(5)
+```
+
+Then we can do something like
+
+```{r, eval = FALSE}
+crazy_AI_algorithm(Claim ~ predictors, data = data)
+```
+
+---
+
+# Rules for predictors
+
+Really, just one rule, and that is
+
+> The information used to derive the predictors for a cell must be available before the calendar period associated with the cell.
+
+I.e. we're not cheating and looking into the future.
+
+
