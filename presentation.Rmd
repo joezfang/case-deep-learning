@@ -17,6 +17,54 @@ output:
 options(htmltools.dir.version = FALSE)
 ```
 
-# Hi
+# Welcome
 
-Hello!
+---
+# Agenda
+
+---
+# What is Machine Learning?
+
+- A field of computer science that gives computers the ability to "learn" with data, without being explicitly programmed.
+
+Machine Learning image
+
+---
+# Why Deep Learning?
+
+- Subset of machine learning
+- Uses a neural network to simulate how the human brain learns
+
+---
+# What is a Neural Network?
+
+Neural Network image
+
+---
+# How does a neural network learn?
+
+- Gradient Descent
+- Backpropagation
+
+---
+# What software is available for deep learning?
+
+Keras, TensorFlow, etc.
+
+---
+# Intro to Keras
+
+https://keras.rstudio.com/
+
+---
+# MNIST Example
+
+Switch to R?
+---
+# Loss Reserving Case Study
+
+This will take multiple slides.
+---
+# Q&A and Discussion
+
+---
