@@ -35,7 +35,7 @@ options(htmltools.dir.version = FALSE)
 
 - A field of computer science that gives computers the ability to "learn" with data, without being explicitly programmed.
 
-![](machine-learning-features.png)
+![](static/img/machine-learning-features.png)
 
 ---
 # Why Deep Learning?
@@ -47,13 +47,13 @@ options(htmltools.dir.version = FALSE)
 - Performs better than traditional machine learning techniques for large datasets
 
 ```{r fig.align='center', out.width='60%', echo=FALSE}
-knitr::include_graphics("deep-learning.png")
+knitr::include_graphics("static/img/deep-learning.png")
 ```
 
 ---
 # What is a Neural Network?
 
-![](neural-network.jpeg)
+![](static/img/neural-network.jpeg)
 
 ---
 # How does a neural network learn?
@@ -62,7 +62,7 @@ knitr::include_graphics("deep-learning.png")
 
 - Backpropagation
 
-![](gradient-descent.png)
+![](static/img/gradient-descent.png)
 
 ---
 # What software is available for deep learning?
