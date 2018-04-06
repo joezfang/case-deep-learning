@@ -95,10 +95,6 @@ Let's switch to R!
 # Q&A and Discussion
 
 ---
-=======
-Hello!
-
----
 class: inverse, center, middle
 
 # Loss reserving case study
@@ -158,20 +154,7 @@ crazy_AI_algorithm(paid ~ predictors, data = data)
 
 # Introducing DeepTriangle
 
-From the abstract...
-
-> We propose a novel approach for loss reserving based on deep neural networks.
-The approach allows for jointly modeling of paid losses and claims outstanding,
-and incorporation of heterogenous inputs. We demonstrate the performance of
-the models by validating them on publicly available Schedule P data across lines
-of business and show that they achieve the performance of existing techniques
-while requiring minimal feature engineering and actuarial input.
-
----
-
-# DeepTriangle
-
-Sounds fancy on paper, but it's really just a neural network.
+Let's try to apply neural networks on some real reserving data. We're gonna call it **DeepTriangle* because it sounds cool.
 
 ---
 
@@ -185,11 +168,7 @@ Schedule P data from [http://www.casact.org/research/index.cfm?fa=loss_reserves_
 
 # Response and predictors
 
-- Response: incremental paid losses and total claims outstanding
-- Predictors:
-  - Time series of paid losses and case reserves along accident year
-  - Time series of paid losses and case reserves along development year
-  - Company (because we're using data from all companies simultaneously)
+Let's talk about our response variable and predictors!
 
 ---
 
@@ -205,22 +184,26 @@ We're gonna predict both paid loss and claims o/s in the same model, ain't that 
 
 - Response: incremental paid losses and total claims outstanding `r emo::ji("thumbsup")`
 - **Predictors:**
-  - **Time series of paid losses and case reserves along accident year**
-  - **Time series of paid losses and case reserves along development year**
-  - Company (because we're using data from all companies simultaneously)
 
 ---
 
 # Predictors
 
-There's really not much we can use in aggregated data. We also have to follow this rule:
+Note that... there's really not much we can use in aggregated data. We also have to follow this rule:
 
 > The information used to derive the predictors for a cell must be available before the calendar period associated with the cell.
 
 I.e. we're not cheating and looking into the future.
 
-=======
+---
 # Predictors
+
+- Response: incremental paid losses and total claims outstanding `r emo::ji("thumbsup")`
+- **Predictors:**
+  - **Time series of paid losses and case reserves along accident year**
+  - **Time series of paid losses and case reserves along development year**
+
+---
 
 Let's see what we mean by "time series of paid losses".
 
@@ -247,11 +230,14 @@ Let's say, for example, we want to compute "time series of paid losses along AY"
 
 ```{r}
 sample_data_with_paid_history <- incremental_data %>%
+  group_by(ay) %>%
   mutate(
-    paid_history = map_chr(seq_along(incremental_paid),
-                       ~ incremental_paid[0:(.x - 1)] %>%
-                         paste0(collapse = ", ")
-                       )
+    paid_history = map_chr(
+      dev, # for each development year, get paid 
+      # loss numbers up to the year before
+      ~ incremental_paid[0:(.x - 1)] %>%
+        paste0(collapse = ", ") # for printing
+    )
   ) %>%
   ungroup() %>%
   filter(ay == 1995) %>%
@@ -278,6 +264,7 @@ In DeepTriangle, we do this for both paid loss & case reserve numbers, along bot
 
 # Predictors
 
+- Response: incremental paid losses and total claims outstanding `r emo::ji("thumbsup")`
 - **Predictors:**
   - Time series of paid losses and case reserves along accident year `r emo::ji("thumbsup")`
   - Time series of paid losses and case reserves along development year `r emo::ji("thumbsup")`
@@ -293,6 +280,8 @@ Company code is one-hot encoded, e.g. the third company in a collection of $20$ 
 keras::to_categorical(3, num_classes = 20)
 ```
 
+Super easy!
+
 ---
 
 # Predictors
@@ -302,13 +291,100 @@ keras::to_categorical(3, num_classes = 20)
   - Time series of paid losses and case reserves along accident year `r emo::ji("thumbsup")`
   - Time series of paid losses and case reserves along development year `r emo::ji("thumbsup")`
   - Company (because we're using data from all companies simultaneously) `r emo::ji("thumbsup")`
-  
+
 Now that we've gone through the response and predictors, let's talk about the neural network itself!
 
 ---
 
 # Architecture
 
-```{r, out.width= "50%", fig.align='center', echo = FALSE}
+Looks fancy, but it's just a neural network!
+
+```{r, out.width= "40%", fig.align='center', echo = FALSE}
 knitr::include_graphics("figs/nn1.png")
 ```
+
+---
+
+# Embedding layer
+
+Dimensionality reduction!
+
+```{r, out.width= "70%", fig.align='center', echo = FALSE}
+knitr::include_graphics("figs/embedding_paper.png")
+```
+
+For example, company code `1767` might get mapped to `c(0.4, 1.2, -3.7)`.
+
+---
+
+# Neural network for sequences
+
+Just like a vanilla feedforward neural network, except we feed the sequential input... in sequence.
+
+```{r, out.width= "70%", fig.align='center', echo = FALSE}
+knitr::include_graphics("figs/rnn.png")
+```
+
+---
+
+# Helping RNN remember
+
+Gated recurrent unit (GRU) is an architecture that helps the network remember stuff from a long time ago. (Don't worry about the details!)
+
+```{r, out.width= "70%", fig.align='center', echo = FALSE}
+knitr::include_graphics("figs/gru.png")
+```
+
+---
+
+# Putting it all together
+
+Again, we're really just applying a bunch of functions, one after another, to our input data.
+
+```{r, out.width= "40%", fig.align='center', echo = FALSE}
+knitr::include_graphics("figs/nn1.png")
+```
+
+---
+
+# Some results
+
+Sample results from the company with the most data in the dataset...
+
+```{r, out.width= "70%", fig.align='center', echo = FALSE}
+knitr::include_graphics("figs/ppauto-results.png")
+```
+
+---
+
+# Some results
+
+Workers' comp
+
+```{r, out.width= "70%", fig.align='center', echo = FALSE}
+knitr::include_graphics("figs/wkcomp-results.png")
+```
+
+---
+
+# Benchmarking
+
+Results for other methods taken from [http://www.casact.org/pubs/monographs/index.cfm?fa=meyers-monograph01](http://www.casact.org/pubs/monographs/index.cfm?fa=meyers-monograph01).
+
+```{r, out.width= "70%", fig.align='center', echo = FALSE}
+knitr::include_graphics("figs/comparison-results.png")
+```
+
+---
+
+# Conclusion
+
+(insert corgi: wow, AI, such hype)
+
+---
+
+# Future work
+
+- It'd be cool to use on claims level data, where we can take into account things like claims adjusters' notes or photos
+- Reserve variability
