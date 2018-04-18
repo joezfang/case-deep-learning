@@ -42,54 +42,16 @@ Basically, figure out what we gotta pay in the future due to claims.
 # Example triangle
 
 
-```r
-library(insuranceData)
-data(IndustryAuto)
-head(IndustryAuto, 12)
 ```
-
-```
-##    Incurral.Year Development.Year Claim
-## 1           1995                1 17674
-## 2           1996                1 18315
-## 3           1997                1 18606
-## 4           1998                1 18816
-## 5           1999                1 20649
-## 6           2000                1 22327
-## 7           2001                1 23141
-## 8           2002                1 24301
-## 9           2003                1 24210
-## 10          2004                1 24468
-## 11          1995                2 32062
-## 12          1996                2 32791
-```
-
----
-
-# Actually a triangle
-
-
-```r
-library(tidyverse)
-# look at data as of calendar year 2002
-data &lt;- IndustryAuto %&gt;%
-  rename(ay = Incurral.Year, dev = Development.Year, paid = Claim) %&gt;%
-  filter(ay + dev - 1 &lt;= 2002)
-# convert to triangle format
-data %&gt;%
-  spread(dev, paid)
-```
-
-```
-##     ay     1     2     3     4     5     6     7     8
-## 1 1995 17674 32062 38619 42035 43829 44723 45162 45375
-## 2 1996 18315 32791 39271 42933 44950 45917 46392    NA
-## 3 1997 18606 32942 39634 43411 45428 46357    NA    NA
-## 4 1998 18816 33667 40575 44446 46476    NA    NA    NA
-## 5 1999 20649 36515 43724 47684    NA    NA    NA    NA
-## 6 2000 22327 39312 46848    NA    NA    NA    NA    NA
-## 7 2001 23141 40527    NA    NA    NA    NA    NA    NA
-## 8 2002 24301    NA    NA    NA    NA    NA    NA    NA
+## # A tibble: 6 x 7
+##   accident_year   `1`   `2`   `3`   `4`   `5`   `6`
+##           &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1          1988  133.  200.   98.  139.   45.    0.
+## 2          1989  934.  812.  619.  214.  184.   NA 
+## 3          1990 2030. 2834. 2016. 1207.   NA    NA 
+## 4          1991 4537. 6990. 3596.   NA    NA    NA 
+## 5          1992 7564. 8497.   NA    NA    NA    NA 
+## 6          1993 8343.   NA    NA    NA    NA    NA
 ```
 
 ---
@@ -102,26 +64,33 @@ We just need to come up with some predictors
 
 
 ```
-##     ay dev  paid predictors
-## 1 1995   1 17674       ?!?!
-## 2 1996   1 18315       ?!?!
-## 3 1997   1 18606       ?!?!
-## 4 1998   1 18816       ?!?!
-## 5 1999   1 20649       ?!?!
+## # A tibble: 8 x 4
+##   accident_year development_lag incremental_paid_loss predictors 
+##           &lt;int&gt;           &lt;int&gt;                 &lt;dbl&gt; &lt;chr&gt;      
+## 1          1988               1                  133. ?!?!?!?!?!?
+## 2          1989               1                  934. ?!?!?!?!?!?
+## 3          1990               1                 2030. ?!?!?!?!?!?
+## 4          1991               1                 4537. ?!?!?!?!?!?
+## 5          1992               1                 7564. ?!?!?!?!?!?
+## 6          1993               1                 8343. ?!?!?!?!?!?
+## 7          1988               2                  200. ?!?!?!?!?!?
+## 8          1989               2                  812. ?!?!?!?!?!?
 ```
 
 Then we can do something like
 
 
 ```r
-crazy_AI_algorithm(paid ~ predictors, data = data)
+crazy_AI_algorithm(incremental_paid_loss ~ predictors, data = data)
 ```
 
 ---
 
 # Introducing DeepTriangle
 
-Let's try to apply neural networks on some real reserving data. We're gonna call it **DeepTriangle* because it sounds cool.
+Let's try to apply neural networks on some real reserving data.
+
+We're gonna call it **DeepTriangle** because it sounds cool.
 
 ---
 
@@ -162,12 +131,13 @@ Note that... there's really not much we can use in aggregated data. We also have
 
 I.e. we're not cheating and looking into the future.
 
+---
+
 # Predictors
 
 - Response: incremental paid losses and total claims outstanding 👍
 - **Predictors:**
-  - **Time series of paid losses and case reserves along accident year**
-  - **Time series of paid losses and case reserves along development year**
+  - **Time series of paid losses and case reserves**
 
 ---
 
@@ -179,86 +149,20 @@ Let's see what we mean by "time series of paid losses".
 
 # Predictors
 
-Get some incremental numbers
+Basically, for each cell in the triangle, we take the experience for the AY up to the previous calendar year. For example, for AY 1988 we have:
 
-
-```r
-incremental_data &lt;- data %&gt;%
-  group_by(ay) %&gt;%
-  mutate(incremental_paid = paid - lag(paid, default = 0))
-incremental_data %&gt;%
-  select(-paid) %&gt;%
-  spread(dev, incremental_paid)
-```
 
 ```
-## # A tibble: 8 x 9
-## # Groups:   ay [8]
-##      ay   `1`   `2`   `3`   `4`   `5`   `6`   `7`   `8`
-##   &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;
-## 1  1995 17674 14388  6557  3416  1794   894   439   213
-## 2  1996 18315 14476  6480  3662  2017   967   475    NA
-## 3  1997 18606 14336  6692  3777  2017   929    NA    NA
-## 4  1998 18816 14851  6908  3871  2030    NA    NA    NA
-## 5  1999 20649 15866  7209  3960    NA    NA    NA    NA
-## 6  2000 22327 16985  7536    NA    NA    NA    NA    NA
-## 7  2001 23141 17386    NA    NA    NA    NA    NA    NA
-## 8  2002 24301    NA    NA    NA    NA    NA    NA    NA
+## # A tibble: 6 x 3
+##   development_lag incremental_paid_loss paid_history         
+##             &lt;int&gt;                 &lt;dbl&gt; &lt;chr&gt;                
+## 1               1                  133. ""                   
+## 2               2                  200. 133                  
+## 3               3                   98. 133, 200             
+## 4               4                  139. 133, 200, 98         
+## 5               5                   45. 133, 200, 98, 139    
+## 6               6                    0. 133, 200, 98, 139, 45
 ```
-
----
-
-# Predictors
-
-Let's say, for example, we want to compute "time series of paid losses along AY" predictor, we'd do something like
-
-
-```r
-sample_data_with_paid_history &lt;- incremental_data %&gt;%
-  group_by(ay) %&gt;%
-  mutate(
-    paid_history = map_chr(
-      dev, # for each development year, get paid 
-      # loss numbers up to the year before
-      ~ incremental_paid[0:(.x - 1)] %&gt;%
-        paste0(collapse = ", ") # for printing
-    )
-  ) %&gt;%
-  ungroup() %&gt;%
-  filter(ay == 1995) %&gt;%
-  select(dev, incremental_paid, paid_history)
-```
-
----
-
-# Predictors
-
-That looks like
-
-
-```r
-sample_data_with_paid_history
-```
-
-```
-## # A tibble: 8 x 3
-##     dev incremental_paid paid_history                            
-##   &lt;int&gt;            &lt;int&gt; &lt;chr&gt;                                   
-## 1     1            17674 ""                                      
-## 2     2            14388 17674                                   
-## 3     3             6557 17674, 14388                            
-## 4     4             3416 17674, 14388, 6557                      
-## 5     5             1794 17674, 14388, 6557, 3416                
-## 6     6              894 17674, 14388, 6557, 3416, 1794          
-## 7     7              439 17674, 14388, 6557, 3416, 1794, 894     
-## 8     8              213 17674, 14388, 6557, 3416, 1794, 894, 439
-```
-
----
-
-# Predictors
-
-In DeepTriangle, we do this for both paid loss &amp; case reserve numbers, along both `ay` and `dev`.
 
 ---
 
@@ -266,8 +170,7 @@ In DeepTriangle, we do this for both paid loss &amp; case reserve numbers, along
 
 - Response: incremental paid losses and total claims outstanding 👍
 - **Predictors:**
-  - Time series of paid losses and case reserves along accident year 👍
-  - Time series of paid losses and case reserves along development year 👍
+  - Time series of paid losses and case reserves 👍
   - **Company (because we're using data from all companies simultaneously)**
 
 ---
@@ -277,12 +180,8 @@ In DeepTriangle, we do this for both paid loss &amp; case reserve numbers, along
 Company code is one-hot encoded, e.g. the third company in a collection of `\(20\)` companies would be represented as
 
 
-```r
-keras::to_categorical(3, num_classes = 20)
 ```
-
-```
-##  [1] 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+##  [1] 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 ```
 
 Super easy!
@@ -294,7 +193,6 @@ Super easy!
 - Response: incremental paid losses and total claims outstanding 👍
 - Predictors:
   - Time series of paid losses and case reserves along accident year 👍
-  - Time series of paid losses and case reserves along development year 👍
   - Company (because we're using data from all companies simultaneously) 👍
 
 Now that we've gone through the response and predictors, let's talk about the neural network itself!
@@ -305,7 +203,7 @@ Now that we've gone through the response and predictors, let's talk about the ne
 
 Looks fancy, but it's just a neural network!
 
-&lt;img src="figs/nn1.png" width="40%" style="display: block; margin: auto;" /&gt;
+&lt;img src="figs/nn1.png" width="30%" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -313,9 +211,9 @@ Looks fancy, but it's just a neural network!
 
 Dimensionality reduction!
 
-&lt;img src="figs/embedding_paper.png" width="70%" style="display: block; margin: auto;" /&gt;
+&lt;img src="figs/embedding_paper.png" width="60%" style="display: block; margin: auto;" /&gt;
 
-For example, company code `1767` might get mapped to `c(0.4, 1.2, -3.7)`.
+For example, company #5 might get mapped to `c(0.4, 1.2, -3.7)`.
 
 ---
 
@@ -329,7 +227,9 @@ Just like a vanilla feedforward neural network, except we feed the sequential in
 
 # Helping RNN remember
 
-Gated recurrent unit (GRU) is an architecture that helps the network remember stuff from a long time ago. (Don't worry about the details!)
+**(Don't worry about the details!)**
+
+Gated recurrent unit (GRU) is an architecture that helps the network remember stuff from a long time ago.
 
 &lt;img src="figs/gru.png" width="70%" style="display: block; margin: auto;" /&gt;
 
@@ -339,7 +239,7 @@ Gated recurrent unit (GRU) is an architecture that helps the network remember st
 
 Again, we're really just applying a bunch of functions, one after another, to our input data.
 
-&lt;img src="figs/nn1.png" width="40%" style="display: block; margin: auto;" /&gt;
+&lt;img src="figs/nn1.png" width="30%" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -367,16 +267,67 @@ Results for other methods taken from [http://www.casact.org/pubs/monographs/inde
 
 ---
 
-# Conclusion
+# Discussion
 
-(insert corgi: wow, AI, such hype)
+Neural networks aren't too shabby at doing some basic reserving work.
+
+But this is just the beginning!
 
 ---
 
-# Future work
+# Discussion
 
-- It'd be cool to use on claims level data, where we can take into account things like claims adjusters' notes or photos
-- Reserve variability
+Future work?
+
+- Predictions intervals for reserve variability.
+
+- Claims level analytics, where we can take into account things like adjusters' notes and images.
+
+- Policy level analytics, towards a holistic approach to pricing + reserving.
+
+- Interpretability.
+
+---
+
+# Discussion
+
+Neural networks are cool (again) and you should give it a shot.
+
+&lt;img src="figs/doge1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Discussion
+
+Don't be scared.
+
+&lt;img src="figs/doge2.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Discussion
+
+Really, we spend years taking all those exams, and exams are hard.
+
+&lt;img src="figs/lee-sedol-facepalm.jpg" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Discussion
+
+Unlike other fields, actuarial work requires tremendous domain expertise.
+
+&lt;img src="figs/fda.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Discussion
+
+/s
+
+Takeaway?
+
+There's a lot of hype and noise around AI, but stay informed, lest we fall behind!
     </textarea>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({

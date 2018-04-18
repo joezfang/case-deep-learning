@@ -109,25 +109,15 @@ Basically, figure out what we gotta pay in the future due to claims.
 
 # Example triangle
 
-```{r}
-library(insuranceData)
-data(IndustryAuto)
-head(IndustryAuto, 12)
-```
-
----
-
-# Actually a triangle
-
-```{r, message = FALSE}
+```{r, message = FALSE, echo = FALSE}
 library(tidyverse)
-# look at data as of calendar year 2002
-data <- IndustryAuto %>%
-  rename(ay = Incurral.Year, dev = Development.Year, paid = Claim) %>%
-  filter(ay + dev - 1 <= 2002)
-# convert to triangle format
-data %>%
-  spread(dev, paid)
+data <- insurance::schedule_p %>% 
+  filter(lob == "private_passenger_auto", 
+         calendar_year < 1994,
+         group_code == "43") %>%
+  select(accident_year, development_lag, incremental_paid_loss)
+data %>% 
+  spread(development_lag, incremental_paid_loss)
 ```
 
 ---
@@ -140,21 +130,23 @@ We just need to come up with some predictors
 
 ```{r, echo = FALSE}
 data %>%
-  mutate(predictors = "?!?!") %>%
-  head(5)
+  mutate(predictors = "?!?!?!?!?!?") %>% 
+  head(8)
 ```
 
 Then we can do something like
 
 ```{r, eval = FALSE}
-crazy_AI_algorithm(paid ~ predictors, data = data)
+crazy_AI_algorithm(incremental_paid_loss ~ predictors, data = data)
 ```
 
 ---
 
 # Introducing DeepTriangle
 
-Let's try to apply neural networks on some real reserving data. We're gonna call it **DeepTriangle* because it sounds cool.
+Let's try to apply neural networks on some real reserving data.
+
+We're gonna call it **DeepTriangle** because it sounds cool.
 
 ---
 
@@ -196,12 +188,10 @@ Note that... there's really not much we can use in aggregated data. We also have
 I.e. we're not cheating and looking into the future.
 
 ---
-# Predictors
 
 - Response: incremental paid losses and total claims outstanding `r emo::ji("thumbsup")`
 - **Predictors:**
-  - **Time series of paid losses and case reserves along accident year**
-  - **Time series of paid losses and case reserves along development year**
+  - **Time series of paid losses and case reserves**
 
 ---
 
@@ -211,46 +201,23 @@ Let's see what we mean by "time series of paid losses".
 
 # Predictors
 
-Get some incremental numbers
+Basically, for each cell in the triangle, we take the experience for the AY up to the previous calendar year. For example, for AY 1988 we have:
 
-```{r}
-incremental_data <- data %>%
-  group_by(ay) %>%
-  mutate(incremental_paid = paid - lag(paid, default = 0))
-incremental_data %>%
-  select(-paid) %>%
-  spread(dev, incremental_paid)
-```
-
----
-
-# Predictors
-
-Let's say, for example, we want to compute "time series of paid losses along AY" predictor, we'd do something like
-
-```{r}
-sample_data_with_paid_history <- incremental_data %>%
-  group_by(ay) %>%
+```{r, out.width="100%", echo = FALSE}
+sample_data_with_paid_history <- data %>%
+  group_by(accident_year) %>%
   mutate(
     paid_history = map_chr(
-      dev, # for each development year, get paid 
+      development_lag, # for each development year, get paid 
       # loss numbers up to the year before
-      ~ incremental_paid[0:(.x - 1)] %>%
+      ~ incremental_paid_loss[0:(.x - 1)] %>%
         paste0(collapse = ", ") # for printing
     )
   ) %>%
   ungroup() %>%
-  filter(ay == 1995) %>%
-  select(dev, incremental_paid, paid_history)
-```
+  filter(accident_year == 1988) %>%
+  select(development_lag, incremental_paid_loss, paid_history)
 
----
-
-# Predictors
-
-That looks like
-
-```{r, out.width="100%"}
 sample_data_with_paid_history
 ```
 
@@ -258,16 +225,9 @@ sample_data_with_paid_history
 
 # Predictors
 
-In DeepTriangle, we do this for both paid loss & case reserve numbers, along both `ay` and `dev`.
-
----
-
-# Predictors
-
 - Response: incremental paid losses and total claims outstanding `r emo::ji("thumbsup")`
 - **Predictors:**
-  - Time series of paid losses and case reserves along accident year `r emo::ji("thumbsup")`
-  - Time series of paid losses and case reserves along development year `r emo::ji("thumbsup")`
+  - Time series of paid losses and case reserves `r emo::ji("thumbsup")`
   - **Company (because we're using data from all companies simultaneously)**
 
 ---
@@ -276,8 +236,8 @@ In DeepTriangle, we do this for both paid loss & case reserve numbers, along bot
 
 Company code is one-hot encoded, e.g. the third company in a collection of $20$ companies would be represented as
 
-```{r}
-keras::to_categorical(3, num_classes = 20)
+```{r, echo = FALSE}
+keras::to_categorical(2, num_classes = 20)
 ```
 
 Super easy!
@@ -289,7 +249,6 @@ Super easy!
 - Response: incremental paid losses and total claims outstanding `r emo::ji("thumbsup")`
 - Predictors:
   - Time series of paid losses and case reserves along accident year `r emo::ji("thumbsup")`
-  - Time series of paid losses and case reserves along development year `r emo::ji("thumbsup")`
   - Company (because we're using data from all companies simultaneously) `r emo::ji("thumbsup")`
 
 Now that we've gone through the response and predictors, let's talk about the neural network itself!
@@ -300,7 +259,7 @@ Now that we've gone through the response and predictors, let's talk about the ne
 
 Looks fancy, but it's just a neural network!
 
-```{r, out.width= "40%", fig.align='center', echo = FALSE}
+```{r, out.width= "30%", fig.align='center', echo = FALSE}
 knitr::include_graphics("figs/nn1.png")
 ```
 
@@ -310,11 +269,11 @@ knitr::include_graphics("figs/nn1.png")
 
 Dimensionality reduction!
 
-```{r, out.width= "70%", fig.align='center', echo = FALSE}
+```{r, out.width= "60%", fig.align='center', echo = FALSE}
 knitr::include_graphics("figs/embedding_paper.png")
 ```
 
-For example, company code `1767` might get mapped to `c(0.4, 1.2, -3.7)`.
+For example, company #5 might get mapped to `c(0.4, 1.2, -3.7)`.
 
 ---
 
@@ -330,7 +289,9 @@ knitr::include_graphics("figs/rnn.png")
 
 # Helping RNN remember
 
-Gated recurrent unit (GRU) is an architecture that helps the network remember stuff from a long time ago. (Don't worry about the details!)
+**(Don't worry about the details!)**
+
+Gated recurrent unit (GRU) is an architecture that helps the network remember stuff from a long time ago.
 
 ```{r, out.width= "70%", fig.align='center', echo = FALSE}
 knitr::include_graphics("figs/gru.png")
@@ -342,7 +303,7 @@ knitr::include_graphics("figs/gru.png")
 
 Again, we're really just applying a bunch of functions, one after another, to our input data.
 
-```{r, out.width= "40%", fig.align='center', echo = FALSE}
+```{r, out.width= "30%", fig.align='center', echo = FALSE}
 knitr::include_graphics("figs/nn1.png")
 ```
 
@@ -378,13 +339,72 @@ knitr::include_graphics("figs/comparison-results.png")
 
 ---
 
-# Conclusion
+# Discussion
 
-(insert corgi: wow, AI, such hype)
+Neural networks aren't too shabby at doing some basic reserving work.
+
+But this is just the beginning!
 
 ---
 
-# Future work
+# Discussion
 
-- It'd be cool to use on claims level data, where we can take into account things like claims adjusters' notes or photos
-- Reserve variability
+Future work?
+
+- Predictions intervals for reserve variability.
+
+- Claims level analytics, where we can take into account things like adjusters' notes and images.
+
+- Policy level analytics, towards a holistic approach to pricing + reserving.
+
+- Interpretability.
+
+---
+
+# Discussion
+
+Neural networks are cool (again) and you should give it a shot.
+
+```{r, out.width= "60%", fig.align='center', echo = FALSE}
+knitr::include_graphics("figs/doge1.png")
+```
+
+---
+
+# Discussion
+
+Don't be scared.
+
+```{r, out.width= "60%", fig.align='center', echo = FALSE}
+knitr::include_graphics("figs/doge2.png")
+```
+
+---
+
+# Discussion
+
+Really, we spend years taking all those exams, and exams are hard.
+
+```{r, out.width= "70%", fig.align='center', echo = FALSE}
+knitr::include_graphics("figs/lee-sedol-facepalm.jpg")
+```
+
+---
+
+# Discussion
+
+Unlike other fields, actuarial work requires tremendous domain expertise.
+
+```{r, out.width= "70%", fig.align='center', echo = FALSE}
+knitr::include_graphics("figs/fda.png")
+```
+
+---
+
+# Discussion
+
+/s
+
+Takeaway?
+
+There's a lot of hype and noise around AI, but stay informed, lest we fall behind!
