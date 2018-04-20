@@ -33,36 +33,36 @@ options(htmltools.dir.version = FALSE)
 ---
 # What is Machine Learning?
 
-- A field of computer science that gives computers the ability to "learn" with data, without being explicitly programmed.
+- A field of computer science that gives computers the ability to "learn" with data, without being explicitly programmed
 
-![](static/img/machine-learning-features.png)
+![](img/machine-learning-features.png)
 
 ---
 # Why Deep Learning?
 
 - Subset of machine learning
 
-- Uses a neural network to simulate how the human brain learns
+- Often uses a neural network to simulate how the human brain learns
 
 - Performs better than traditional machine learning techniques for large datasets
 
 ```{r fig.align='center', out.width='60%', echo=FALSE}
-knitr::include_graphics("static/img/deep-learning.png")
+knitr::include_graphics("img/deep-learning.png")
 ```
 
 ---
 # What is a Neural Network?
 
-![](static/img/neural-network.jpeg)
+![](img/neural-network.png)
 
 ---
 # How does a neural network learn?
 
+- Loss Functions
+
 - Gradient Descent
 
-- Backpropagation
-
-![](static/img/gradient-descent.png)
+![](img/gradient-descent.png)
 
 ---
 # What software is available for deep learning?
@@ -89,12 +89,7 @@ knitr::include_graphics("static/img/deep-learning.png")
 ---
 # MNIST Example
 
-Switch to R here
-
----
-# Loss Reserving Case Study
-
-Kevin's slides
+Let's switch to R!
 
 ---
 # Q&A and Discussion
