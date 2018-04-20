@@ -40,7 +40,7 @@ class: center, middle, inverse, title-slide
 
 - A field of computer science that gives computers the ability to "learn" with data, without being explicitly programmed
 
-![](img/machine-learning-features.png)
+![](figs/machine-learning-features.png)
 
 ---
 # Why Deep Learning?
@@ -51,12 +51,12 @@ class: center, middle, inverse, title-slide
 
 - Performs better than traditional machine learning techniques for large datasets
 
-&lt;img src="img/deep-learning.png" width="60%" style="display: block; margin: auto;" /&gt;
+&lt;img src="figs/deep-learning.png" width="60%" style="display: block; margin: auto;" /&gt;
 
 ---
 # What is a Neural Network?
 
-![](img/neural-network.png)
+![](figs/neural-network.png)
 
 ---
 # How does a neural network learn?
@@ -65,7 +65,7 @@ class: center, middle, inverse, title-slide
 
 - Gradient Descent
 
-![](img/gradient-descent.png)
+![](figs/gradient-descent.png)
 
 ---
 # What software is available for deep learning?
@@ -98,6 +98,307 @@ Let's switch to R!
 # Q&amp;A and Discussion
 
 ---
+class: inverse, center, middle
+
+# Loss reserving case study
+
+---
+
+# "Claims liabilities Estimation"
+
+Basically, figure out what we gotta pay in the future due to claims.
+
+---
+
+# Example triangle
+
+
+```
+## # A tibble: 6 x 7
+##   accident_year   `1`   `2`   `3`   `4`   `5`   `6`
+##           &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1          1988  133.  200.   98.  139.   45.    0.
+## 2          1989  934.  812.  619.  214.  184.   NA 
+## 3          1990 2030. 2834. 2016. 1207.   NA    NA 
+## 4          1991 4537. 6990. 3596.   NA    NA    NA 
+## 5          1992 7564. 8497.   NA    NA    NA    NA 
+## 6          1993 8343.   NA    NA    NA    NA    NA
+```
+
+---
+
+# Treat this as a predictive modeling problem
+
+Each cell of the triangle is a row in the modeling dataset.
+
+We just need to come up with some predictors
+
+
+```
+## # A tibble: 8 x 4
+##   accident_year development_lag incremental_paid_loss predictors 
+##           &lt;int&gt;           &lt;int&gt;                 &lt;dbl&gt; &lt;chr&gt;      
+## 1          1988               1                  133. ?!?!?!?!?!?
+## 2          1989               1                  934. ?!?!?!?!?!?
+## 3          1990               1                 2030. ?!?!?!?!?!?
+## 4          1991               1                 4537. ?!?!?!?!?!?
+## 5          1992               1                 7564. ?!?!?!?!?!?
+## 6          1993               1                 8343. ?!?!?!?!?!?
+## 7          1988               2                  200. ?!?!?!?!?!?
+## 8          1989               2                  812. ?!?!?!?!?!?
+```
+
+Then we can do something like
+
+
+```r
+crazy_AI_algorithm(incremental_paid_loss ~ predictors, data = data)
+```
+
+---
+
+# Introducing DeepTriangle
+
+Let's try to apply neural networks on some real reserving data.
+
+We're gonna call it **DeepTriangle** because it sounds cool.
+
+---
+
+# Data
+
+Schedule P data from [http://www.casact.org/research/index.cfm?fa=loss_reserves_data](http://www.casact.org/research/index.cfm?fa=loss_reserves_data).
+
+10 accident years (1988-1997) of paid and incurred losses, with 10 development lags, from a bunch of companies and lines of business.
+
+---
+
+# Response and predictors
+
+Let's talk about our response variable and predictors!
+
+---
+
+# Response
+
+- **Response: incremental paid losses and total claims outstanding**
+
+We're gonna predict both paid loss and claims o/s in the same model, ain't that cool?!
+
+---
+
+# Predictors
+
+- Response: incremental paid losses and total claims outstanding 👍
+- **Predictors:**
+
+---
+
+# Predictors
+
+Note that... there's really not much we can use in aggregated data. We also have to follow this rule:
+
+&gt; The information used to derive the predictors for a cell must be available before the calendar period associated with the cell.
+
+I.e. we're not cheating and looking into the future.
+
+---
+
+# Predictors
+
+- Response: incremental paid losses and total claims outstanding 👍
+- **Predictors:**
+  - **Time series of paid losses and case reserves**
+
+---
+
+# Predictors
+
+Let's see what we mean by "time series of paid losses".
+
+---
+
+# Predictors
+
+Basically, for each cell in the triangle, we take the experience for the AY up to the previous calendar year. For example, for AY 1988 we have:
+
+
+```
+## # A tibble: 6 x 3
+##   development_lag incremental_paid_loss paid_history         
+##             &lt;int&gt;                 &lt;dbl&gt; &lt;chr&gt;                
+## 1               1                  133. ""                   
+## 2               2                  200. 133                  
+## 3               3                   98. 133, 200             
+## 4               4                  139. 133, 200, 98         
+## 5               5                   45. 133, 200, 98, 139    
+## 6               6                    0. 133, 200, 98, 139, 45
+```
+
+---
+
+# Predictors
+
+- Response: incremental paid losses and total claims outstanding 👍
+- **Predictors:**
+  - Time series of paid losses and case reserves 👍
+  - **Company (because we're using data from all companies simultaneously)**
+
+---
+
+# Predictors
+
+Company code is one-hot encoded, e.g. the third company in a collection of `\(20\)` companies would be represented as
+
+
+```
+##  [1] 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+```
+
+Super easy!
+
+---
+
+# Predictors
+
+- Response: incremental paid losses and total claims outstanding 👍
+- Predictors:
+  - Time series of paid losses and case reserves along accident year 👍
+  - Company (because we're using data from all companies simultaneously) 👍
+
+Now that we've gone through the response and predictors, let's talk about the neural network itself!
+
+---
+
+# Architecture
+
+Looks fancy, but it's just a neural network!
+
+&lt;img src="figs/nn1.png" width="30%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Embedding layer
+
+Dimensionality reduction!
+
+&lt;img src="figs/embedding_paper.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+For example, company #5 might get mapped to `c(0.4, 1.2, -3.7)`.
+
+---
+
+# Neural network for sequences
+
+Just like a vanilla feedforward neural network, except we feed the sequential input... in sequence.
+
+&lt;img src="figs/rnn.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Helping RNN remember
+
+**(Don't worry about the details!)**
+
+Gated recurrent unit (GRU) is an architecture that helps the network remember stuff from a long time ago.
+
+&lt;img src="figs/gru.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Putting it all together
+
+Again, we're really just applying a bunch of functions, one after another, to our input data.
+
+&lt;img src="figs/nn1.png" width="30%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Some results
+
+Sample results from the company with the most data in the dataset...
+
+&lt;img src="figs/ppauto-results.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Some results
+
+Workers' comp
+
+&lt;img src="figs/wkcomp-results.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Benchmarking
+
+Results for other methods taken from [http://www.casact.org/pubs/monographs/index.cfm?fa=meyers-monograph01](http://www.casact.org/pubs/monographs/index.cfm?fa=meyers-monograph01).
+
+&lt;img src="figs/comparison_table.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Discussion
+
+Neural networks aren't too shabby at doing some basic reserving work.
+
+But this is just the beginning!
+
+---
+
+# Discussion
+
+Future work?
+
+- Predictions intervals for reserve variability.
+
+- Claims level analytics, where we can take into account things like adjusters' notes and images.
+
+- Policy level analytics, towards a holistic approach to pricing + reserving.
+
+- Interpretability.
+
+---
+
+# Discussion
+
+Neural networks are cool (again) and you should give it a shot.
+
+&lt;img src="figs/doge1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Discussion
+
+Don't be scared.
+
+&lt;img src="figs/doge2.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Discussion
+
+Really, we spend years taking all those exams, and exams are hard.
+
+&lt;img src="figs/lee-sedol-facepalm.jpg" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Discussion
+
+Unlike other fields, actuarial work requires tremendous domain expertise.
+
+&lt;img src="figs/fda.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Discussion
+
+/s
+
+Takeaway?
+
+There's a lot of hype and noise around AI, but stay informed, lest we fall behind!
     </textarea>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
