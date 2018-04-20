@@ -35,7 +35,7 @@ options(htmltools.dir.version = FALSE)
 
 - A field of computer science that gives computers the ability to "learn" with data, without being explicitly programmed
 
-![](img/machine-learning-features.png)
+![](figs/machine-learning-features.png)
 
 ---
 # Why Deep Learning?
@@ -47,13 +47,13 @@ options(htmltools.dir.version = FALSE)
 - Performs better than traditional machine learning techniques for large datasets
 
 ```{r fig.align='center', out.width='60%', echo=FALSE}
-knitr::include_graphics("img/deep-learning.png")
+knitr::include_graphics("figs/deep-learning.png")
 ```
 
 ---
 # What is a Neural Network?
 
-![](img/neural-network.png)
+![](figs/neural-network.png)
 
 ---
 # How does a neural network learn?
@@ -62,7 +62,7 @@ knitr::include_graphics("img/deep-learning.png")
 
 - Gradient Descent
 
-![](img/gradient-descent.png)
+![](figs/gradient-descent.png)
 
 ---
 # What software is available for deep learning?
@@ -189,11 +189,15 @@ I.e. we're not cheating and looking into the future.
 
 ---
 
+# Predictors
+
 - Response: incremental paid losses and total claims outstanding `r emo::ji("thumbsup")`
 - **Predictors:**
   - **Time series of paid losses and case reserves**
 
 ---
+
+# Predictors
 
 Let's see what we mean by "time series of paid losses".
 
