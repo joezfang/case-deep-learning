@@ -334,7 +334,7 @@ knitr::include_graphics("figs/wkcomp-results.png")
 Results for other methods taken from [http://www.casact.org/pubs/monographs/index.cfm?fa=meyers-monograph01](http://www.casact.org/pubs/monographs/index.cfm?fa=meyers-monograph01).
 
 ```{r, out.width= "70%", fig.align='center', echo = FALSE}
-knitr::include_graphics("figs/comparison-results.png")
+knitr::include_graphics("figs/comparison_table.png")
 ```
 
 ---
