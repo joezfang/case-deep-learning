@@ -17,7 +17,13 @@ output:
 options(htmltools.dir.version = FALSE)
 ```
 
-# Welcome/Introduction
+# Introduction
+
+Your hosts and their cocktails of choice.
+
+![](figs/headshots.png) 
+
+Can you spot the actuary?
 
 ---
 # Agenda
@@ -241,7 +247,7 @@ sample_data_with_paid_history
 Company code is one-hot encoded, e.g. the third company in a collection of $20$ companies would be represented as
 
 ```{r, echo = FALSE}
-keras::to_categorical(2, num_classes = 20)
+c(0, 0, 1, rep(0, 17))
 ```
 
 Super easy!
