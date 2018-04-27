@@ -98,9 +98,6 @@ knitr::include_graphics("figs/deep-learning.png")
 Let's switch to R!
 
 ---
-# Q&A and Discussion
-
----
 class: inverse, center, middle
 
 # Loss reserving case study
@@ -418,3 +415,7 @@ knitr::include_graphics("figs/fda.png")
 Takeaway?
 
 There's a lot of hype and noise around AI, but stay informed, lest we fall behind!
+
+---
+
+# Q&A and Discussion
