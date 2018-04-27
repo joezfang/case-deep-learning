@@ -140,9 +140,19 @@ We can evaluate our model's performance using the test data:
 model %>% evaluate(x_test, y_test)
 ```
 
-Lastly, we can generate predictions for our test data:
+Lastly, we can view some sample input images and have our model predict the digits they represent:
 
 ```{r}
-model %>% predict_classes(x_test)
+par(mfrow=c(3,5))
+x_test_plot <- mnist$test$x / 255
+for(i in 1:15) {
+  plot(as.raster(x_test_plot[i,,]))
+}
 ```
 
+```{r}
+predict <- model %>% predict_classes(x_test)
+predict[1:15]
+```
+
+Looks like our model did pretty well!
