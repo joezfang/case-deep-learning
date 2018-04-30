@@ -120,12 +120,12 @@ Basically, figure out what we gotta pay in the future due to claims.
 ## # A tibble: 6 x 7
 ##   accident_year   `1`   `2`   `3`   `4`   `5`   `6`
 ##           &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-## 1          1988  133.  200.   98.  139.   45.    0.
-## 2          1989  934.  812.  619.  214.  184.   NA 
-## 3          1990 2030. 2834. 2016. 1207.   NA    NA 
-## 4          1991 4537. 6990. 3596.   NA    NA    NA 
-## 5          1992 7564. 8497.   NA    NA    NA    NA 
-## 6          1993 8343.   NA    NA    NA    NA    NA
+## 1          1988   133   200    98   139    45     0
+## 2          1989   934   812   619   214   184    NA
+## 3          1990  2030  2834  2016  1207    NA    NA
+## 4          1991  4537  6990  3596    NA    NA    NA
+## 5          1992  7564  8497    NA    NA    NA    NA
+## 6          1993  8343    NA    NA    NA    NA    NA
 ```
 
 ---
@@ -141,14 +141,14 @@ We just need to come up with some predictors
 ## # A tibble: 8 x 4
 ##   accident_year development_lag incremental_paid_loss predictors 
 ##           &lt;int&gt;           &lt;int&gt;                 &lt;dbl&gt; &lt;chr&gt;      
-## 1          1988               1                  133. ?!?!?!?!?!?
-## 2          1989               1                  934. ?!?!?!?!?!?
-## 3          1990               1                 2030. ?!?!?!?!?!?
-## 4          1991               1                 4537. ?!?!?!?!?!?
-## 5          1992               1                 7564. ?!?!?!?!?!?
-## 6          1993               1                 8343. ?!?!?!?!?!?
-## 7          1988               2                  200. ?!?!?!?!?!?
-## 8          1989               2                  812. ?!?!?!?!?!?
+## 1          1988               1                   133 ?!?!?!?!?!?
+## 2          1989               1                   934 ?!?!?!?!?!?
+## 3          1990               1                  2030 ?!?!?!?!?!?
+## 4          1991               1                  4537 ?!?!?!?!?!?
+## 5          1992               1                  7564 ?!?!?!?!?!?
+## 6          1993               1                  8343 ?!?!?!?!?!?
+## 7          1988               2                   200 ?!?!?!?!?!?
+## 8          1989               2                   812 ?!?!?!?!?!?
 ```
 
 Then we can do something like
@@ -230,12 +230,12 @@ Basically, for each cell in the triangle, we take the experience for the AY up t
 ## # A tibble: 6 x 3
 ##   development_lag incremental_paid_loss paid_history         
 ##             &lt;int&gt;                 &lt;dbl&gt; &lt;chr&gt;                
-## 1               1                  133. ""                   
-## 2               2                  200. 133                  
-## 3               3                   98. 133, 200             
-## 4               4                  139. 133, 200, 98         
-## 5               5                   45. 133, 200, 98, 139    
-## 6               6                    0. 133, 200, 98, 139, 45
+## 1               1                   133 ""                   
+## 2               2                   200 133                  
+## 3               3                    98 133, 200             
+## 4               4                   139 133, 200, 98         
+## 5               5                    45 133, 200, 98, 139    
+## 6               6                     0 133, 200, 98, 139, 45
 ```
 
 ---
@@ -406,6 +406,7 @@ There's a lot of hype and noise around AI, but stay informed, lest we fall behin
 ---
 
 # Q&amp;A and Discussion
+=======
     </textarea>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
