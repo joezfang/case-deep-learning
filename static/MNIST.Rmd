@@ -1,6 +1,8 @@
 ---
 title: "Modeling MNIST Data with Keras"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 # Introduction
@@ -19,7 +21,7 @@ Before beginning to create our model, we need to make sure that we have the nece
 * [RStudio](https://www.rstudio.com/)
 * A Python distribution, such as [Anaconda](https://www.anaconda.com/)
 
-Once we have the software installed, we can install the `keras` package in RStudio using `install.packages("keras")`. Next, we install the `TensorFlow` backend using the `install_keras()` function. Now we are ready to begin!
+Once we have the software installed, we can install the `keras` package in RStudio using `install.packages("keras")`. Next, we install Keras and the `TensorFlow` backend using the `install_keras()` function. Now we are ready to begin!
 
 # Loading the Package and Dataset
 
@@ -86,9 +88,9 @@ model %>%
   layer_dense(units = 10, activation = 'softmax')
 ```
 
-Going through the code, we see that our model has 3 dense layers and 2 dropout layers. The dense layer is our typical neural network layer, with input being mapped to output. We tell our first layer that our input is a vector with 784 values (generated from our images above). We first map our inputs to 256 outputs, then 128 inputs, and finally the 10 outputs which correspond to the digits 0 to 9. The activation function defines how the layer relates the input and output.
+Going through the code, we see that our model has 3 dense layers and 2 dropout layers. The dense layer is our typical neural network layer, with input being mapped to output. We tell our first layer that our input is a vector with 784 values (generated from our images above). We first map our inputs to 256 outputs, then 128 outputs, and finally the 10 outputs which correspond to the digits 0 to 9. The activation function defines how the layer relates the input and output.
 
-The dropout layers assign a certain portion of the inputs to be 0. This helps to prevent overfitting.
+The dropout layers randomly assign a certain portion of the weights to be 0. This helps to prevent overfitting.
 
 We can see the details of our model below:
 
