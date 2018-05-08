@@ -95,7 +95,7 @@ knitr::include_graphics("figs/deep-learning.png")
 ---
 # MNIST Example
 
-Let's switch to R!
+![](img/MNIST.png)
 
 ---
 class: inverse, center, middle
@@ -418,5 +418,5 @@ There's a lot of hype and noise around AI, but stay informed, lest we fall behin
 
 ---
 
-# Q&A and Discussion
+# Q&A
 
