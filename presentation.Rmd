@@ -19,7 +19,7 @@ options(htmltools.dir.version = FALSE)
 
 # Introduction
 
-Your hosts and their cocktails of choice.
+Your hosts and their drinks of choice.
 
 ![](figs/headshots.png) 
 
