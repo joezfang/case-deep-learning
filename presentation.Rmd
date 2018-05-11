@@ -6,7 +6,7 @@ date: "May 2018"
 output:
   xaringan::moon_reader:
     css: ["default", "default-fonts", "hygge"]
-    lib_dir: static/libs
+    lib_dir: public/libs
     nature:
       highlightStyle: github
       highlightLines: true
