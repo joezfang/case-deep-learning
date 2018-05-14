@@ -76,11 +76,13 @@ knitr::include_graphics("figs/deep-learning.png")
 Approximately...
 
 - Higher level APIs
-    - Keras, PyTorch, Tensorflow Estimator, ...
+    - Keras, PyTorch (+Caffe2), Tensorflow Estimator, ...
 
 - Lower level libraries to power computations
     - TensorFlow, PyTorch, Theano, CNTK, MXNet, ... 
 
+<br />
+.content-box-blue[R interfaces available!]
 ---
 # Intro to Keras
 
