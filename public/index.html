@@ -256,6 +256,8 @@ Basically, for each cell in the triangle, we take the experience for the AY up t
 
 # Predictors
 
+&gt; **NOTE (5/23/18)** -- we don't actually do this; rather, we input a scalar corresponding to the index of the company into the neural network, and Keras/TF uses a lookup table instead of one-hot encoding the input on the fly.
+
 Company code is one-hot encoded, e.g. the third company in a collection of `\(20\)` companies would be represented as
 
 
@@ -287,6 +289,8 @@ Looks fancy, but it's just a neural network!
 ---
 
 # Embedding layer
+
+&gt; **NOTE (5/23/18)** -- the diagram here is incorrect as we're not one-hot encoding. Instead, we're using a lookup table. The intuition (and results) are the same, though.
 
 Dimensionality reduction!
 
