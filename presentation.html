@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Actuarial Applications of Deep Learning</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Joe Fang" />
+    <meta name="date" content="2019-03-11" />
+    <link href="public/libs/remark-css/default.css" rel="stylesheet" />
+    <link href="public/libs/remark-css/default-fonts.css" rel="stylesheet" />
+    <link href="public/libs/remark-css/hygge.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Actuarial Applications of Deep Learning
+## Loss Reserving and Beyond
+### Joe Fang
+### March 11, 2019
+
+---
+
+
+
+
+# Agenda
+
+- Introduction to Deep Learning
+
+- Loss Reserving Case Study
+
+- Q+A
+
+---
+# What is Machine Learning?
+
+.full-width[.content-box-blue[A field of computer science that gives computers the ability to "learn" with data, without being explicitly programmed]]
+
+![](figs/machine-learning-features.png)
+
+---
+# Why Deep Learning?
+
+- Subset of machine learning
+
+- Often uses a neural network to simulate how the human brain learns
+
+- Performs better than traditional machine learning techniques for large datasets
+
+&lt;img src="figs/deep-learning.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+---
+# What is a Neural Network?
+
+![](figs/neural-network.png)
+
+---
+# How does a neural network learn?
+
+- Loss Functions
+
+- Gradient Descent
+
+- Backpropagation
+
+![](figs/gradient-descent.png)
+
+---
+# Intro to Keras
+
+.full-width[.content-box-red[Keras&lt;sup&gt;*&lt;/sup&gt; is a high-level neural networks API developed with a focus on enabling fast experimentation]]
+
+.footnote[[*] [https://keras.rstudio.com/](https://keras.rstudio.com/)]
+
+---
+class: inverse, center, middle
+
+# Loss reserving case study
+
+---
+# Example triangle
+
+
+```
+## # A tibble: 6 x 7
+##   accident_year   `1`   `2`   `3`   `4`   `5`   `6`
+##           &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1          1988   133   200    98   139    45     0
+## 2          1989   934   812   619   214   184    NA
+## 3          1990  2030  2834  2016  1207    NA    NA
+## 4          1991  4537  6990  3596    NA    NA    NA
+## 5          1992  7564  8497    NA    NA    NA    NA
+## 6          1993  8343    NA    NA    NA    NA    NA
+```
+
+---
+
+# Treat this as a predictive modeling problem
+
+Each cell of the triangle is a row in the modeling dataset.
+
+We just need to come up with some predictors.
+
+
+```
+## # A tibble: 8 x 4
+##   accident_year development_lag incremental_paid_loss predictors 
+##           &lt;int&gt;           &lt;int&gt;                 &lt;dbl&gt; &lt;chr&gt;      
+## 1          1988               1                   133 ?!?!?!?!?!?
+## 2          1989               1                   934 ?!?!?!?!?!?
+## 3          1990               1                  2030 ?!?!?!?!?!?
+## 4          1991               1                  4537 ?!?!?!?!?!?
+## 5          1992               1                  7564 ?!?!?!?!?!?
+## 6          1993               1                  8343 ?!?!?!?!?!?
+## 7          1988               2                   200 ?!?!?!?!?!?
+## 8          1989               2                   812 ?!?!?!?!?!?
+```
+
+---
+
+# Introducing DeepTriangle
+
+Let's try to apply neural networks on some real reserving data.
+
+&lt;br /&gt;
+
+.content-box-yellow[We will call this network **DeepTriangle**&lt;sup&gt;*&lt;/sup&gt;.]
+
+.footnote[[*] [GitHub](https://github.com/kevinykuo/deeptriangle)] 
+
+---
+
+# Data
+
+Schedule P data from the [CAS website](http://www.casact.org/research/index.cfm?fa=loss_reserves_data).
+
+.full-width[.content-box-green[10 accident years (1988-1997) of paid and incurred losses, with 10 development lags, from several companies and lines of business.]]
+
+---
+
+# Response and predictors
+
+.full-width[.content-box-purple[Let's talk about our response variable and predictors!]]
+
+---
+
+# Response
+
+- **Response: future incremental paid losses and claims outstanding**
+
+We will predict both paid loss and claims outstanding in the same model.
+
+---
+
+# Predictors
+
+Note that... there's really not much we can use in aggregated data. We also have to follow this rule:
+
+&gt; The information used to derive the predictors for a cell must be available before the calendar period associated with the cell.
+
+---
+
+# Predictors
+
+- Response: future incremental paid losses and claims outstanding
+- **Predictors:**
+  - **Time series of paid losses and case reserves**
+
+---
+
+# Predictors
+
+For each cell in the triangle, we take the experience for the AY up to the previous calendar year. For example, for AY 1988 we have:
+
+
+```
+## # A tibble: 6 x 3
+##   development_lag incremental_paid_loss paid_history         
+##             &lt;int&gt;                 &lt;dbl&gt; &lt;chr&gt;                
+## 1               1                   133 ""                   
+## 2               2                   200 133                  
+## 3               3                    98 133, 200             
+## 4               4                   139 133, 200, 98         
+## 5               5                    45 133, 200, 98, 139    
+## 6               6                     0 133, 200, 98, 139, 45
+```
+
+---
+
+# Predictors
+
+- Response: incremental paid losses and total claims outstanding 
+- **Predictors:**
+  - Time series of paid losses and case reserves along accident year 
+  - **Company (because we're using data from all companies simultaneously)**
+
+Now that we've gone through the response and predictors, let's talk about the neural network itself!
+
+---
+
+# Architecture
+
+&lt;img src="figs/nn1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Embedding layer
+
+Dimensionality reduction is the goal of this layer.
+
+&lt;img src="figs/embedding_paper.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+For example, company #5 might get mapped to `c(0.4, 1.2, -3.7)`.
+
+---
+
+# Helping RNN remember
+
+A gated recurrent unit (GRU) is an architecture that helps the network remember things from a long time ago.
+
+&lt;img src="figs/gru.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Some results
+
+Results from a sample commercial auto company:
+
+&lt;img src="figs/ppauto-results.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Some results
+
+Results from a sample workers compensation company:
+
+&lt;img src="figs/wkcomp-results.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Benchmarking
+
+Results for other methods except for ML taken from the [Meyers monograph](http://www.casact.org/pubs/monographs/index.cfm?fa=meyers-monograph01) on stochastic loss reserving.
+
+&lt;img src="figs/comparison_table.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Conclusion
+
+- Neural networks perform well when performing basic loss reserving
+
+- Many possible model architectures, which could have other actuarial applications
+
+---
+
+# Future work
+
+- Claim level analytics, where we can take into account things like adjusters' notes and images
+
+- Policy level analytics, towards a holistic approach to pricing + reserving
+
+- Improving interpretability of models
+
+---
+
+# Kasa AI
+
+- New initiative that encourages innovation in insurance analytics
+
+- Focus on collaboration and an open source environment
+
+- If interested, visit [kasa.ai](https://kasa.ai/)
+
+---
+
+# Questions?
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

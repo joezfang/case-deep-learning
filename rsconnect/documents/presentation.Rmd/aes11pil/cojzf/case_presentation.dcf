@@ -1,0 +1,12 @@
+name: case_presentation
+title: CASE Presentation
+username: cojzf
+account: cojzf
+server: aes11pil
+hostUrl: http://aes11pil:3939/__api__
+appId: 274
+bundleId: 982
+url: http://aes11pil:3939/content/274/
+when: 1551913030.34469
+asMultiple: FALSE
+asStatic: FALSE

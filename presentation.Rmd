@@ -1,8 +1,8 @@
 ---
 title: "Actuarial Applications of Deep Learning"
 subtitle: "Loss Reserving and Beyond"
-author: "Joe Fang, Nicole Foster, and Kevin Kuo"
-date: "May 2018"
+author: "Joe Fang"
+date: "March 11, 2019"
 output:
   xaringan::moon_reader:
     css: ["default", "default-fonts", "hygge"]
@@ -17,24 +17,13 @@ output:
 options(htmltools.dir.version = FALSE)
 ```
 
-# Introduction
-
-Your hosts and their drinks of choice.
-
-![](figs/headshots.png) 
-
-.content-box-gray[Can you spot the actuary?]
-
----
 # Agenda
 
 - Introduction to Deep Learning
 
-- Hands-on Keras Demo
-
 - Loss Reserving Case Study
 
-- Q+A and Open Discussion
+- Q+A
 
 ---
 # What is Machine Learning?
@@ -68,21 +57,10 @@ knitr::include_graphics("figs/deep-learning.png")
 
 - Gradient Descent
 
+- Backpropagation
+
 ![](figs/gradient-descent.png)
 
----
-# What software is available for deep learning?
-
-Approximately...
-
-- Higher level APIs
-    - Keras, PyTorch (+Caffe2), Tensorflow Estimator, ...
-
-- Lower level libraries to power computations
-    - TensorFlow, PyTorch, Theano, CNTK, MXNet, ... 
-
-<br />
-.content-box-blue[R interfaces available!]
 ---
 # Intro to Keras
 
@@ -90,27 +68,12 @@ Approximately...
 
 .footnote[[*] [https://keras.rstudio.com/](https://keras.rstudio.com/)]
 
-
----
-# MNIST Example
-
-![](figs/MNIST.png)
-
-Input your number at: [http://colorado.rstudio.com:3939/classroom-assignment/](http://colorado.rstudio.com:3939/classroom-assignment/)
-
 ---
 class: inverse, center, middle
 
 # Loss reserving case study
 
 ---
-
-# "Claims liabilities Estimation"
-
-.content-box-blue[Basically, figure out what we gotta pay in the future due to claims.]
-
----
-
 # Example triangle
 
 ```{r, message = FALSE, echo = FALSE}
@@ -130,18 +93,12 @@ data %>%
 
 Each cell of the triangle is a row in the modeling dataset.
 
-We just need to come up with some predictors
+We just need to come up with some predictors.
 
 ```{r, echo = FALSE}
 data %>%
   mutate(predictors = "?!?!?!?!?!?") %>% 
   head(8)
-```
-
-Then we can do something like
-
-```{r, eval = FALSE}
-crazy_AI_algorithm(incremental_paid_loss ~ predictors, data = data)
 ```
 
 ---
@@ -152,17 +109,17 @@ Let's try to apply neural networks on some real reserving data.
 
 <br />
 
-.content-box-yellow[We're gonna call it **DeepTriangle**<sup>*</sup> because it sounds cool.]
+.content-box-yellow[We will call this network **DeepTriangle**<sup>*</sup>.]
 
-.footnote[[*] [https://arxiv.org/abs/1804.09253](https://arxiv.org/abs/1804.09253)] 
+.footnote[[*] [GitHub](https://github.com/kevinykuo/deeptriangle)] 
 
 ---
 
 # Data
 
-Schedule P data from [http://www.casact.org/research/index.cfm?fa=loss_reserves_data](http://www.casact.org/research/index.cfm?fa=loss_reserves_data).
+Schedule P data from the [CAS website](http://www.casact.org/research/index.cfm?fa=loss_reserves_data).
 
-.full-width[.content-box-green[10 accident years (1988-1997) of paid and incurred losses, with 10 development lags, from a bunch of companies and lines of business.]]
+.full-width[.content-box-green[10 accident years (1988-1997) of paid and incurred losses, with 10 development lags, from several companies and lines of business.]]
 
 ---
 
@@ -174,16 +131,9 @@ Schedule P data from [http://www.casact.org/research/index.cfm?fa=loss_reserves_
 
 # Response
 
-- **Response: incremental paid losses and total claims outstanding**
+- **Response: future incremental paid losses and claims outstanding**
 
-We're gonna predict both paid loss and claims o/s in the same model, ain't that cool?!
-
----
-
-# Predictors
-
-- Response: incremental paid losses and total claims outstanding `r emo::ji("thumbsup")`
-- **Predictors:**
+We will predict both paid loss and claims outstanding in the same model.
 
 ---
 
@@ -193,13 +143,11 @@ Note that... there's really not much we can use in aggregated data. We also have
 
 > The information used to derive the predictors for a cell must be available before the calendar period associated with the cell.
 
-I.e. we're not cheating and looking into the future.
-
 ---
 
 # Predictors
 
-- Response: incremental paid losses and total claims outstanding `r emo::ji("thumbsup")`
+- Response: future incremental paid losses and claims outstanding
 - **Predictors:**
   - **Time series of paid losses and case reserves**
 
@@ -207,13 +155,7 @@ I.e. we're not cheating and looking into the future.
 
 # Predictors
 
-.content-box-green[Let's see what we mean by "time series of paid losses".]
-
----
-
-# Predictors
-
-Basically, for each cell in the triangle, we take the experience for the AY up to the previous calendar year. For example, for AY 1988 we have:
+For each cell in the triangle, we take the experience for the AY up to the previous calendar year. For example, for AY 1988 we have:
 
 ```{r, out.width="100%", echo = FALSE}
 sample_data_with_paid_history <- data %>%
@@ -237,33 +179,10 @@ sample_data_with_paid_history
 
 # Predictors
 
-- Response: incremental paid losses and total claims outstanding `r emo::ji("thumbsup")`
+- Response: incremental paid losses and total claims outstanding 
 - **Predictors:**
-  - Time series of paid losses and case reserves `r emo::ji("thumbsup")`
+  - Time series of paid losses and case reserves along accident year 
   - **Company (because we're using data from all companies simultaneously)**
-
----
-
-# Predictors
-
-> **NOTE (5/23/18)** -- we don't actually do this; rather, we input a scalar corresponding to the index of the company into the neural network, and Keras/TF uses a lookup table instead of one-hot encoding the input on the fly.
-
-Company code is one-hot encoded, e.g. the third company in a collection of $20$ companies would be represented as
-
-```{r, echo = FALSE}
-c(0, 0, 1, rep(0, 17))
-```
-
-Super easy!
-
----
-
-# Predictors
-
-- Response: incremental paid losses and total claims outstanding `r emo::ji("thumbsup")`
-- Predictors:
-  - Time series of paid losses and case reserves along accident year `r emo::ji("thumbsup")`
-  - Company (because we're using data from all companies simultaneously) `r emo::ji("thumbsup")`
 
 Now that we've gone through the response and predictors, let's talk about the neural network itself!
 
@@ -271,9 +190,7 @@ Now that we've gone through the response and predictors, let's talk about the ne
 
 # Architecture
 
-Looks fancy, but it's just a neural network!
-
-```{r, out.width= "30%", fig.align='center', echo = FALSE}
+```{r, out.width= "80%", fig.align='center', echo = FALSE}
 knitr::include_graphics("figs/nn1.png")
 ```
 
@@ -281,9 +198,7 @@ knitr::include_graphics("figs/nn1.png")
 
 # Embedding layer
 
-> **NOTE (5/23/18)** -- the diagram here is incorrect as we're not one-hot encoding. Instead, we're using a lookup table. The intuition (and results) are the same, though.
-
-Dimensionality reduction!
+Dimensionality reduction is the goal of this layer.
 
 ```{r, out.width= "60%", fig.align='center', echo = FALSE}
 knitr::include_graphics("figs/embedding_paper.png")
@@ -293,21 +208,9 @@ For example, company #5 might get mapped to `c(0.4, 1.2, -3.7)`.
 
 ---
 
-# Neural network for sequences
-
-Just like a vanilla feedforward neural network, except we feed the sequential input... in sequence.
-
-```{r, out.width= "70%", fig.align='center', echo = FALSE}
-knitr::include_graphics("figs/rnn.png")
-```
-
----
-
 # Helping RNN remember
 
-**(Don't worry about the details!)**
-
-Gated recurrent unit (GRU) is an architecture that helps the network remember stuff from a long time ago.
+A gated recurrent unit (GRU) is an architecture that helps the network remember things from a long time ago.
 
 ```{r, out.width= "70%", fig.align='center', echo = FALSE}
 knitr::include_graphics("figs/gru.png")
@@ -315,19 +218,9 @@ knitr::include_graphics("figs/gru.png")
 
 ---
 
-# Putting it all together
-
-Again, we're really just applying a bunch of functions, one after another, to our input data.
-
-```{r, out.width= "30%", fig.align='center', echo = FALSE}
-knitr::include_graphics("figs/nn1.png")
-```
-
----
-
 # Some results
 
-Sample results from the company with the most data in the dataset...
+Results from a sample commercial auto company:
 
 ```{r, out.width= "70%", fig.align='center', echo = FALSE}
 knitr::include_graphics("figs/ppauto-results.png")
@@ -337,7 +230,7 @@ knitr::include_graphics("figs/ppauto-results.png")
 
 # Some results
 
-Workers' comp
+Results from a sample workers compensation company:
 
 ```{r, out.width= "70%", fig.align='center', echo = FALSE}
 knitr::include_graphics("figs/wkcomp-results.png")
@@ -347,7 +240,7 @@ knitr::include_graphics("figs/wkcomp-results.png")
 
 # Benchmarking
 
-Results for other methods taken from [http://www.casact.org/pubs/monographs/index.cfm?fa=meyers-monograph01](http://www.casact.org/pubs/monographs/index.cfm?fa=meyers-monograph01).
+Results for other methods except for ML taken from the [Meyers monograph](http://www.casact.org/pubs/monographs/index.cfm?fa=meyers-monograph01) on stochastic loss reserving.
 
 ```{r, out.width= "70%", fig.align='center', echo = FALSE}
 knitr::include_graphics("figs/comparison_table.png")
@@ -355,79 +248,33 @@ knitr::include_graphics("figs/comparison_table.png")
 
 ---
 
-# Discussion
+# Conclusion
 
-Neural networks aren't too shabby at doing some basic reserving work.
+- Neural networks perform well when performing basic loss reserving
 
-<br />
-
-.content-box-purple[But this is just the beginning!]
+- Many possible model architectures, which could have other actuarial applications
 
 ---
 
-# Discussion
+# Future work
 
-Future work?
+- Claim level analytics, where we can take into account things like adjusters' notes and images
 
-- Predictions intervals for reserve variability.
+- Policy level analytics, towards a holistic approach to pricing + reserving
 
-- Claims level analytics, where we can take into account things like adjusters' notes and images.
-
-- Policy level analytics, towards a holistic approach to pricing + reserving.
-
-- Interpretability.
+- Improving interpretability of models
 
 ---
 
-# Discussion
+# Kasa AI
 
-Neural networks are cool (again) and you should give it a shot.
+- New initiative that encourages innovation in insurance analytics
 
-```{r, out.width= "60%", fig.align='center', echo = FALSE}
-knitr::include_graphics("figs/doge1.png")
-```
+- Focus on collaboration and an open source environment
 
----
-
-# Discussion
-
-Don't be scared.
-
-```{r, out.width= "60%", fig.align='center', echo = FALSE}
-knitr::include_graphics("figs/doge2.png")
-```
+- If interested, visit [kasa.ai](https://kasa.ai/)
 
 ---
 
-# Discussion
-
-Really, we spend years taking all those exams, and exams are hard.
-
-```{r, out.width= "70%", fig.align='center', echo = FALSE}
-knitr::include_graphics("figs/lee-sedol-facepalm.jpg")
-```
-
----
-
-# Discussion
-
-Unlike other fields, actuarial work requires tremendous domain expertise.
-
-```{r, out.width= "70%", fig.align='center', echo = FALSE}
-knitr::include_graphics("figs/fda.png")
-```
-
----
-
-# Discussion
-
-/s
-
-Takeaway?
-
-There's a lot of hype and noise around AI, but stay informed, lest we fall behind!
-
----
-
-# Q&A
+# Questions?
 
