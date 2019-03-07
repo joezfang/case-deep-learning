@@ -278,3 +278,5 @@ knitr::include_graphics("static/figs/comparison_table.png")
 
 # Questions?
 
+Slides can be found at [https://case-deep-learning.netlify.com](https://case-deep-learning.netlify.com)
+
