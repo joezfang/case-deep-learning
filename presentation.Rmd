@@ -30,7 +30,7 @@ options(htmltools.dir.version = FALSE)
 
 .full-width[.content-box-blue[A field of computer science that gives computers the ability to "learn" with data, without being explicitly programmed]]
 
-![](figs/machine-learning-features.png)
+![](static/figs/machine-learning-features.png)
 
 ---
 # Why Deep Learning?
@@ -42,13 +42,13 @@ options(htmltools.dir.version = FALSE)
 - Performs better than traditional machine learning techniques for large datasets
 
 ```{r fig.align='center', out.width='60%', echo=FALSE}
-knitr::include_graphics("figs/deep-learning.png")
+knitr::include_graphics("static/figs/deep-learning.png")
 ```
 
 ---
 # What is a Neural Network?
 
-![](figs/neural-network.png)
+![](static/figs/neural-network.png)
 
 ---
 # How does a neural network learn?
@@ -59,7 +59,7 @@ knitr::include_graphics("figs/deep-learning.png")
 
 - Backpropagation
 
-![](figs/gradient-descent.png)
+![](static/figs/gradient-descent.png)
 
 ---
 # Intro to Keras
@@ -191,7 +191,7 @@ Now that we've gone through the response and predictors, let's talk about the ne
 # Architecture
 
 ```{r, out.width= "80%", fig.align='center', echo = FALSE}
-knitr::include_graphics("figs/nn1.png")
+knitr::include_graphics("static/figs/nn1.png")
 ```
 
 ---
@@ -201,7 +201,7 @@ knitr::include_graphics("figs/nn1.png")
 Dimensionality reduction is the goal of this layer.
 
 ```{r, out.width= "60%", fig.align='center', echo = FALSE}
-knitr::include_graphics("figs/embedding_paper.png")
+knitr::include_graphics("static/figs/embedding_paper.png")
 ```
 
 For example, company #5 might get mapped to `c(0.4, 1.2, -3.7)`.
@@ -213,7 +213,7 @@ For example, company #5 might get mapped to `c(0.4, 1.2, -3.7)`.
 A gated recurrent unit (GRU) is an architecture that helps the network remember things from a long time ago.
 
 ```{r, out.width= "70%", fig.align='center', echo = FALSE}
-knitr::include_graphics("figs/gru.png")
+knitr::include_graphics("static/figs/gru.png")
 ```
 
 ---
@@ -223,7 +223,7 @@ knitr::include_graphics("figs/gru.png")
 Results from a sample commercial auto company:
 
 ```{r, out.width= "70%", fig.align='center', echo = FALSE}
-knitr::include_graphics("figs/ppauto-results.png")
+knitr::include_graphics("static/figs/ppauto-results.png")
 ```
 
 ---
@@ -233,7 +233,7 @@ knitr::include_graphics("figs/ppauto-results.png")
 Results from a sample workers compensation company:
 
 ```{r, out.width= "70%", fig.align='center', echo = FALSE}
-knitr::include_graphics("figs/wkcomp-results.png")
+knitr::include_graphics("static/figs/wkcomp-results.png")
 ```
 
 ---
@@ -243,7 +243,7 @@ knitr::include_graphics("figs/wkcomp-results.png")
 Results for other methods except for ML taken from the [Meyers monograph](http://www.casact.org/pubs/monographs/index.cfm?fa=meyers-monograph01) on stochastic loss reserving.
 
 ```{r, out.width= "70%", fig.align='center', echo = FALSE}
-knitr::include_graphics("figs/comparison_table.png")
+knitr::include_graphics("static/figs/comparison_table.png")
 ```
 
 ---
